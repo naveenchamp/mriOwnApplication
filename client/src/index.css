@@ -1,0 +1,20 @@
+/* Minimal global styles */
+:root{
+  --bg: #f7f7f7;
+  --panel: #ffffff;
+  --muted: #666;
+  --accent: #2b6cea;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: var(--bg);
+  color: #111;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+a { color: var(--accent); text-decoration: none; }
+button { cursor: pointer; }
+.container { max-width: 1100px; margin: 0 auto; padding: 20px; }

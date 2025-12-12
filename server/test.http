@@ -1,0 +1,56 @@
+### TEST 1 — REGISTER USER
+POST http://localhost:5000/auth/register
+Content-Type: application/json
+
+{
+  "username": "naveen",
+  "password": "1234"
+}
+
+### TEST 2 — LOGIN
+POST http://localhost:5000/auth/login
+Content-Type: application/json
+
+{
+  "username": "naveen",
+  "password": "1234"
+}
+
+### Copy the token from LOGIN response and paste below:
+@token = YOUR_TOKEN_HERE
+
+
+### TEST 3 — CREATE PROJECT
+POST http://localhost:5000/projects
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Building A",
+  "budget": 50000
+}
+
+### TEST 4 — GET PROJECTS
+GET http://localhost:5000/projects
+Authorization: Bearer {{token}}
+
+
+### TEST 5 — CREATE INVOICE
+POST http://localhost:5000/invoices
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "project_id": 1,
+  "amount": 15000,
+  "due_date": "2025-03-20"
+}
+
+### TEST 6 — GET INVOICES
+GET http://localhost:5000/invoices
+Authorization: Bearer {{token}}
+
+
+### TEST 7 — RISK SCORE
+GET http://localhost:5000/risk/1
+Authorization: Bearer {{token}}
