@@ -2,6 +2,7 @@
 
 A full-stack ERP application for managing **projects, finance, users, risks, invoices, vendors, customers, payments, and analytics**.
 
+https://github.com/user-attachments/assets/1d116b64-34d3-42c1-bfa1-8b4204ef13d2
 ---
 
 ## 🧱 Tech Stack
