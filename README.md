@@ -2,10 +2,12 @@
 
 A full-stack ERP application for managing **projects, finance, users, risks, invoices, vendors, customers, payments, and analytics**.
 
+https://github.com/user-attachments/assets/1d116b64-34d3-42c1-bfa1-8b4204ef13d2
+
 <br/>
 <div style="text-align: center;">
   <video style="max-width:80%;box-shadow:0 2.8px 2.2px rgba(0, 0, 0, 0.12);outline:none;" loop="true" autoplay="autoplay" controls="controls" muted>
-    <source src="https://github.com/user-attachments/assets/1d116b64-34d3-42c1-bfa1-8b4204ef13d2" type="video/mp4">
+    <source src="https://drive.google.com/file/d/1aELkT4Cn7-_MvQblQGcT2TiFbiuHpo8c/view?usp=drive_link" type="video/mp4">
   </video>
 </div>
 <br/>
