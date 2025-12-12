@@ -40,22 +40,23 @@ export default function Login({ isModal = false, onSuccess }) {
     }
 
     setLoading(true);
+
     try {
       const res = await api.post("/auth/login", { username, password });
 
-      if (res?.data?.token) {
-        login(res.data.token);
+      // BACKEND does NOT send token. Cookie is already set.
+      if (res.data?.success) {
+        // Notify context that user is now authenticated
+        await login();  
 
-        // If used inside modal → close modal
         if (isModal && onSuccess) {
-          onSuccess(); // closes LoginModal
+          onSuccess();
           return;
         }
 
-        // Otherwise → redirect to dashboard route
         nav("/dashboard");
       } else {
-        setMsg(res?.data?.message || "Login failed");
+        setMsg(res.data?.message || "Login failed");
       }
     } catch (err) {
       const text = err?.response?.data?.message || "Login failed";
@@ -115,19 +116,6 @@ export default function Login({ isModal = false, onSuccess }) {
           >
             {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
-        </div>
-
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginTop: 6
-        }}>
-          <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <input type="checkbox" checked={remember}
-              onChange={(e) => setRemember(e.target.checked)} /> Remember me
-          </label>
-          <Link to="/forgot" style={{ color: "#60a5fa" }}>Forgot?</Link>
         </div>
 
         <Button
