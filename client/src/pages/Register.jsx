@@ -1,8 +1,6 @@
-// src/pages/Login.jsx
-import React, { useState, useContext } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../services/api";
-import { useAuth } from "../context/AuthContext";
 import {
   AuthWrapper,
   AuthCard,
@@ -10,61 +8,86 @@ import {
   Button,
   SwitchText,
   ErrorText,
+  SuccessText
 } from "../components/AuthContainer";
 import { motion } from "framer-motion";
-import { Eye, EyeOff } from "lucide-react";
 
-export default function Login({ isModal = false, onSuccess }) {
+export default function Register() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [remember, setRemember] = useState(false);
   const [fieldError, setFieldError] = useState("");
 
-  const { refreshUser } = useAuth();   // ✅ NEW – loads user from /auth/me
   const nav = useNavigate();
 
   const userRef = React.useRef(null);
   const passRef = React.useRef(null);
+  const confirmRef = React.useRef(null);
+
+  // Password strength meter
+  const scorePassword = (pwd) => {
+    if (!pwd) return { score: 0, label: "Too short" };
+    let score = 0;
+    if (pwd.length >= 8) score++;
+    if (/[A-Z]/.test(pwd)) score++;
+    if (/[0-9]/.test(pwd)) score++;
+    if (/[^A-Za-z0-9]/.test(pwd)) score++;
+
+    const labels = ["Very weak", "Weak", "Okay", "Strong", "Very strong"];
+    return { score, label: labels[score] };
+  };
 
   const submit = async () => {
     setMsg("");
     setFieldError("");
 
+    // Required fields
     if (!username.trim() || !password) {
-      setFieldError("Please enter username and password.");
-      (!username.trim() ? userRef : passRef).current?.focus();
+      setFieldError("Username and password are required.");
+      if (!username.trim()) userRef.current?.focus();
+      else passRef.current?.focus();
+      return;
+    }
+
+    // Password rules
+    if (password.length < 8) {
+      setFieldError("Password must be at least 8 characters.");
+      passRef.current?.focus();
+      return;
+    }
+
+    if (password !== confirm) {
+      setFieldError("Passwords do not match.");
+      confirmRef.current?.focus();
       return;
     }
 
     setLoading(true);
+
     try {
-      await api.post("/auth/login", { username, password }, { withCredentials: true });
+      const res = await api.post("/auth/register", { username, password });
 
-      // 🔥 Load logged-in user from cookie
-      await refreshUser();
-
-      if (isModal && onSuccess) return onSuccess();
-
-      // Redirect
-      nav("/dashboard");
+      setMsg("success");
+      setTimeout(() => nav("/login"), 1400);
     } catch (err) {
-      setMsg(err?.response?.data?.message || "Login failed");
+      const text = err?.response?.data?.message || "Registration failed";
+      setFieldError(text);
+      setMsg("error");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <AuthWrapper style={isModal ? { marginLeft: 0, height: "auto" } : {}}>
+    <AuthWrapper>
       <AuthCard
         as={motion.div}
-        initial={{ opacity: 0, y: 60, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: -40, scale: 0.92 }}
-        transition={{ duration: 0.55, type: "spring" }}
+        initial={{ opacity: 0, y: 60 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, type: "spring" }}
       >
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -72,11 +95,14 @@ export default function Login({ isModal = false, onSuccess }) {
           transition={{ delay: 0.15 }}
           style={{ textAlign: "center", marginBottom: 20 }}
         >
-          <div style={{ fontSize: 40 }}>🔐</div>
+          <div style={{ fontSize: 40 }}>🧑‍💻</div>
         </motion.div>
 
-        <h2 style={{ textAlign: "center", marginBottom: 20 }}>Welcome Back</h2>
+        <h2 style={{ textAlign: "center", marginBottom: 20 }}>
+          Create Account
+        </h2>
 
+        {/* Username */}
         <Input
           ref={userRef}
           placeholder="Username"
@@ -84,70 +110,84 @@ export default function Login({ isModal = false, onSuccess }) {
           onChange={(e) => setUsername(e.target.value)}
         />
 
-        <div style={{ position: "relative" }}>
-          <Input
-            ref={passRef}
-            placeholder="Password"
-            type={showPassword ? "text" : "password"}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button
-            onClick={() => setShowPassword((s) => !s)}
-            type="button"
-            style={{
-              position: "absolute",
-              right: 10,
-              top: 10,
-              background: "transparent",
-              border: "none",
-              color: "#cbd5e1",
-              cursor: "pointer",
-            }}
-          >
-            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-          </button>
-        </div>
+        {/* Password */}
+        <Input
+          ref={passRef}
+          placeholder="Password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginTop: 6,
-          }}
-        >
-          <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <input
-              type="checkbox"
-              checked={remember}
-              onChange={(e) => setRemember(e.target.checked)}
-            />{" "}
-            Remember me
-          </label>
-          <Link to="/forgot" style={{ color: "#60a5fa" }}>
-            Forgot?
-          </Link>
-        </div>
+        {/* Password Strength Meter */}
+        {password && (() => {
+          const p = scorePassword(password);
+          const pct = (p.score / 4) * 100;
+          const color =
+            p.score <= 1 ? "#ef4444" :
+            p.score === 2 ? "#f59e0b" :
+            p.score === 3 ? "#60a5fa" : "#22c55e";
 
-        <Button
-          as={motion.button}
-          whileTap={{ scale: 0.95 }}
-          whileHover={{ scale: 1.03 }}
-          onClick={submit}
-          disabled={loading}
-        >
-          {loading ? "Signing in..." : "Login"}
+          return (
+            <div style={{ marginBottom: 8 }}>
+              <div
+                style={{
+                  height: 8,
+                  background: "rgba(255,255,255,0.06)",
+                  borderRadius: 6,
+                  overflow: "hidden"
+                }}
+              >
+                <div
+                  style={{
+                    width: `${pct}%`,
+                    height: "100%",
+                    background: color,
+                    transition: "width 200ms ease"
+                  }}
+                />
+              </div>
+
+              <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 6 }}>
+                {p.label}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Confirm Password */}
+        <Input
+          ref={confirmRef}
+          placeholder="Confirm Password"
+          type="password"
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+        />
+
+        {/* Submit */}
+        <Button onClick={submit} disabled={loading}>
+          {loading ? "Creating account..." : "Register"}
         </Button>
 
-        {!isModal && (
-          <SwitchText>
-            No account? <Link to="/register">Register</Link>
-          </SwitchText>
+        <SwitchText>
+          Already have an account?{" "}
+          <Link to="/login" style={{ color: "#3b82f6" }}>
+            Login
+          </Link>
+        </SwitchText>
+
+        {/* Error */}
+        {(fieldError || msg === "error") && (
+          <ErrorText>
+            {fieldError || "Registration failed"}
+          </ErrorText>
         )}
 
-        {fieldError && <ErrorText>{fieldError}</ErrorText>}
-        {msg && <ErrorText>{msg}</ErrorText>}
+        {/* Success */}
+        {msg === "success" && (
+          <SuccessText>Registered! Redirecting…</SuccessText>
+        )}
+
       </AuthCard>
     </AuthWrapper>
   );
