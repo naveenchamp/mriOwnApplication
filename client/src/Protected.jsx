@@ -2,11 +2,12 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 
-export default function Protected({ children }) {
+export default function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
 
-  if (loading) return null;       // Wait for cookie check
-  if (!user) return <Navigate to="/" replace />;  // Not logged → landing page
+  if (loading) return null; // or loader
+
+  if (!user) return <Navigate to="/login" replace />;
 
   return children;
 }
